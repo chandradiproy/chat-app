@@ -7,7 +7,7 @@ import { useQueryStore } from "./store/query.store";
 function App() {
   const { initSocket } = useQueryStore();
   // const [socketUrl] = useState('http://localhost:3000');
-  const socketUrl = import.meta.env.MODE === 'development' ? 'http://localhost:5001' : 'https://chat-app-1waf.onrender.com/';
+  const socketUrl = import.meta.env.MODE === 'development' ? 'ws://localhost:5001' : 'ws://chat-app-1waf.onrender.com/';
 
   // Initialize WebSocket connection
   useEffect(()=>{
