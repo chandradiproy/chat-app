@@ -7,7 +7,7 @@ import { useQueryStore } from "./store/query.store";
 function App() {
   const { initSocket } = useQueryStore();
   // const [socketUrl] = useState('http://localhost:3000');
-  const socketUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '/';
+  const socketUrl = import.meta.env.MODE === 'development' ? 'http://localhost:5001' : '/';
 
   // Initialize WebSocket connection
   useEffect(()=>{
