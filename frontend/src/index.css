@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+/* Hide the scrollbar in webkit-based browsers */
+::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Hide the scrollbar in Firefox */
+  .chat-container {
+    scrollbar-width: none; /* Hide scrollbar for Firefox */
+  }
+  
