@@ -31,8 +31,8 @@ function ChatContainer() {
               >
                 {/* Render bot's icon and message */}
                 {message.sender === 'bot' ? (
-                  <div className="flex items-start space-x-2">
-                    <Bot size={30} className="dark:text-white text-black" />
+                  <div className="flex items-center space-x-2 border-1 justify-center dark:border-gray-100 border-zinc-900 w-fit p-2 rounded-full">
+                    <Bot size={30} className="dark:text-white text-black  " />
                   </div>
                 ) : (
                   <div className="flex items-start space-x-2">
@@ -53,8 +53,10 @@ function ChatContainer() {
 
         {/* Render status message (if Gemini is searching) */}
         {isSearchingByGemini && (
-          <div className="flex items-start space-x-2 animate-pulse text-sm text-gray-500 mb-2">
-            <Bot size={30} className="dark:text-white text-black" />
+          <div className=" animate-pulse text-sm text-gray-500 mb-2">
+            <div className='flex items-center space-x-2 border-1 justify-center dark:border-gray-100 border-zinc-900 w-fit p-2 rounded-full'>
+              <Bot size={30} className="dark:text-white text-black" />
+              </div>
             {statusMessage.text}
           </div>
         )}
