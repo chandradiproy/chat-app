@@ -1,12 +1,13 @@
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-const QA = require('../models/qa.model');
-const { query } = require('express');
+
+import dotenv from 'dotenv'
+import QA from '../models/qa.model.js';
+import mongoose from 'mongoose';
+
 
 dotenv.config();
-
+// console.log('Connecting to MongoDB:', process.env.MONGODB_URI);
 mongoose
-    .connect(process.env.MONGODB_URI, {
+    .connect('mongodb+srv://diproy2002:robkHAgHs4fBup8R@cluster0.827sx.mongodb.net/QADB?retryWrites=true&w=majority&appName=Cluster0', {
         useNewUrlParser: true,
         useUnifiedTopology: true,
     })
