@@ -26,9 +26,9 @@ app.use(cors());
 app.use(express.json());
 
 // ✅ Fix: Define Root Route to Fix "Cannot GET /"
-app.get('/', (req, res) => {
-    res.send('Welcome to the Chatbot API! 🚀 Socket.IO is running.');
-});
+// app.get('/', (req, res) => {
+//     res.send('Welcome to the Chatbot API! 🚀 Socket.IO is running.');
+// });
 
 // ✅ Fix: Serve Frontend Only in Production
 if (process.env.NODE_ENV === 'production') {
