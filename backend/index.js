@@ -7,99 +7,80 @@ import dotenv from 'dotenv';
 import QA from './models/qa.model.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import path from 'path';
+
 dotenv.config();
 const __dirname = path.resolve();
-
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-    cors: {
-        origin: '*',
-    },
-});
+const io = new Server(server, { cors: { origin: '*' } });
 
 app.use(cors());
 app.use(express.json());
 
-if(process.env.NODE_ENV === 'production') {
+// ✅ Fix: Define Root Route to Fix "Cannot GET /"
+app.get('/', (req, res) => {
+    res.send('Welcome to the Chatbot API! 🚀 Socket.IO is running.');
+});
+
+// ✅ Fix: Serve Frontend Only in Production
+if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, '../frontend/dist')));
     app.get('*', (req, res) => {
         res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
     });
-
 }
 
-mongoose
-    .connect(process.env.MONGODB_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    })
-    .then(() => {
-        console.log('Connected to MongoDB');
-        initSocket();
+// ✅ Fix: Initialize Socket Before MongoDB Connection
+initSocket();
 
-    })
-    .catch((error) => {
-        console.log("MongoDB connection error: ", error);
-    });
-
-
-
+// ✅ Fix: MongoDB Connection Issues
+mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 5000,
+})
+.then(() => console.log('Connected to MongoDB'))
+.catch((error) => console.log("MongoDB connection error: ", error));
 
 function initSocket() {
     io.on('connection', (socket) => {
-        console.log('Socket connected: ', socket.id);
-        socket.on('query', async (data) => {
-            const userQuery = data.query;
-            try {
-                //Step : Query the database for the user's question
+        console.log('Socket connected:', socket.id);
+        const interval = setInterval(() => socket.emit('ping', { message: 'Server heartbeat' }), 25000);
 
-                const dbResponse = await QA.findOne({ question: { $regex: userQuery, $options: 'i' } });
+        socket.on('query', async (data) => {
+            try {
+                const dbResponse = await QA.findOne({ question: { $regex: data.query, $options: 'i' } });
                 if (dbResponse) {
                     socket.emit('response', { message: dbResponse.answer });
                 } else {
-                    //Step : If no answer found in the database, use Gemini to find the answer
-                    socket.emit('status', { message: 'Sorry, no answer found in the database! Using Gemini to find your answer...' });
-                    console.log('Emitting status message: No answer found, using Gemini...');
-                    const geminiResponse = await getGeminiResponse(userQuery);
-                    socket.emit('response', { message: geminiResponse });
-
+                    socket.emit('status', { message: 'No answer in DB! Fetching from Gemini...' });
+                    console.log('Fetching from Gemini...');
+                    socket.emit('response', { message: await getGeminiResponse(data.query) });
                 }
             } catch (error) {
-                console.error('Error querying QA:', error.message);
-                socket.emit('response', { message: "An error occurred while querying the database." });
+                socket.emit('response', { message: "Error querying database." });
             }
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Socket disconnected:', socket.id);
+            clearInterval(interval);
         });
     });
 }
 
 async function getGeminiResponse(userQuery) {
-    if (!process.env.GEMINI_API_KEY) {
-        console.error("Gemini API key and secret not found. Please set up your Gemini API key and secret in the .env file.");
-        return "Gemini API key and secret not found. Please set up your Gemini API key and secret in the .env file.";
-    }
+    if (!process.env.GEMINI_API_KEY) return "Gemini API key missing.";
     try {
-        //Setting up the Google Generative AI
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({model : 'gemini-1.0-pro'});
-        
-        const instruction = `You are an assistant who provides concise and direct answers. Please give a short and to-the-point response to the following question:`;
-        
-        // Constructing the final prompt by combining the instruction and user query
-        const prompt = `${instruction} ${userQuery}`;
-
-        //Querying the model
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.0-pro' });
         const result = await model.generateContent(userQuery);
-        const response = await result.response;
-
-        return await response.text() || "Sorry, Gemini could not find an answer to your question.";
-
+        if (!result.response) throw new Error("Invalid response from Gemini API");
+        return result.response.text();
     } catch (error) {
-        console.error('Error querying Gemini:', error.message);
-        return "An error occurred while querying Gemini.";
+        console.error('Gemini API error:', error.message);
+        return "Error retrieving answer from Gemini.";
     }
 }
 
-server.listen(process.env.PORT || 3000, () => {
-    console.log('Server running on port 3000');
-});
+server.listen(process.env.PORT || 3000, () => console.log('Server running on port 3000'));
