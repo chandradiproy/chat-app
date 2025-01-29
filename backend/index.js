@@ -6,7 +6,9 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import QA from './models/qa.model.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import path from 'path';
 dotenv.config();
+const __dirname = path.resolve();
 
 const app = express();
 const server = http.createServer(app);
@@ -18,6 +20,14 @@ const io = new Server(server, {
 
 app.use(cors());
 app.use(express.json());
+
+if(process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, '../frontend/dist')));
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+    });
+
+}
 
 mongoose
     .connect(process.env.MONGODB_URI, {
