@@ -11,7 +11,10 @@ export const useQueryStore = create((set, get) => ({
 
   // Initialize Socket.io connection
   initSocket: (socketUrl) => {
-    const socket = io(socketUrl); // Use Socket.io client to connect
+    const socket = io(socketUrl, {
+      transports: ['websocket'], // Use only WebSockets
+      withCredentials: true, // Send credentials with cross-origin requests
+    }); // Use Socket.io client to connect
 
     // Listen for successful connection
     socket.on('connect', () => {
