@@ -14,7 +14,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: process.env.FRONTEND_URL || '*', // Use an explicit frontend URL
+        origin:[ process.env.FRONTEND_URL || '*'], // Use an explicit frontend URL
         methods: ['GET', 'POST'],
         allowedHeaders: ['Content-Type'],
         credentials: true,
@@ -26,15 +26,15 @@ app.use(cors());
 app.use(express.json());
 
 // ✅ Fix: Define Root Route to Fix "Cannot GET /"
-// app.get('/', (req, res) => {
-//     res.send('Welcome to the Chatbot API! 🚀 Socket.IO is running.');
-// });
+app.get('/', (req, res) => {
+    res.send('Welcome to the Chatbot API! 🚀 Socket.IO is running.');
+});
 
 // ✅ Fix: Serve Frontend Only in Production
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, '../frontend/dist')));
     app.get('*', (req, res) => {
-        res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+        res.sendFile(path.join(__dirname, "../frontend","dist","index.html"));
     });
 }
 
@@ -91,4 +91,4 @@ async function getGeminiResponse(userQuery) {
     }
 }
 
-server.listen(process.env.PORT || 5001, () => console.log('Server running on port 3000'));
+server.listen(process.env.PORT || 5001, () => console.log('Server running on port ', process.env.PORT || 5001));
