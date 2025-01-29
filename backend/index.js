@@ -71,7 +71,7 @@ async function getGeminiResponse(userQuery) {
     try {
         //Setting up the Google Generative AI
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({model : 'gemini-1.5-flash'});
+        const model = genAI.getGenerativeModel({model : 'gemini-1.0-pro'});
         
         const instruction = `You are an assistant who provides concise and direct answers. Please give a short and to-the-point response to the following question:`;
         
